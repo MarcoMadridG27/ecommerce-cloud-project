@@ -1,0 +1,487 @@
+---
+openapi: 3.0.0
+info:
+  title: API de Usuarios y Órdenes
+  description: API para gestionar usuarios, direcciones, órdenes y pagos
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000
+    description: Servidor de desarrollo
+
+paths:
+  /user:
+    get:
+      summary: Obtener todos los usuarios
+      responses:
+        '200':
+          description: Lista de usuarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      summary: Crear un nuevo usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+      responses:
+        '201':
+          description: Usuario creado exitosamente
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "User created successfully"
+
+  /users/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          format: int32
+    get:
+      summary: Obtener un usuario por ID
+      responses:
+        '200':
+          description: Detalles del usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Usuario no encontrado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "User not found"
+    put:
+      summary: Actualizar un usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+      responses:
+        '200':
+          description: Usuario actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInput'
+    delete:
+      summary: Eliminar un usuario
+      responses:
+        '200':
+          description: Usuario eliminado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "User with id: 1 deleted successfully"
+
+  /address:
+    get:
+      summary: Obtener todas las direcciones
+      responses:
+        '200':
+          description: Lista de direcciones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Address'
+    post:
+      summary: Crear una nueva dirección
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressInput'
+      responses:
+        '201':
+          description: Dirección creada
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Address created successfully"
+
+  /address/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          format: int32
+    get:
+      summary: Obtener una dirección por ID
+      responses:
+        '200':
+          description: Detalles de la dirección
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+        '404':
+          description: Dirección no encontrada
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Address not found"
+    put:
+      summary: Actualizar una dirección
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressInput'
+      responses:
+        '200':
+          description: Dirección actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressInput'
+    delete:
+      summary: Eliminar una dirección
+      responses:
+        '200':
+          description: Dirección eliminada
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Address with id: 1 deleted successfully"
+
+  /orders:
+    get:
+      summary: Obtener todas las órdenes
+      responses:
+        '200':
+          description: Lista de órdenes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+    post:
+      summary: Crear una nueva orden
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderInput'
+      responses:
+        '201':
+          description: Orden creada
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Order created successfully"
+
+  /orders/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          format: int32
+    get:
+      summary: Obtener una orden por ID
+      responses:
+        '200':
+          description: Detalles de la orden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '404':
+          description: Orden no encontrada
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Order not found"
+    put:
+      summary: Actualizar una orden
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderInput'
+      responses:
+        '200':
+          description: Orden actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderInput'
+    delete:
+      summary: Eliminar una orden
+      responses:
+        '200':
+          description: Orden eliminada
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Order with id: 1 deleted successfully"
+
+  /payments:
+    get:
+      summary: Obtener todos los pagos
+      responses:
+        '200':
+          description: Lista de pagos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+    post:
+      summary: Crear un nuevo pago
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentInput'
+      responses:
+        '201':
+          description: Pago creado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Payment created successfully"
+
+  /payments/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          format: int32
+    get:
+      summary: Obtener un pago por ID
+      responses:
+        '200':
+          description: Detalles del pago
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '404':
+          description: Pago no encontrado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Payment not found"
+    put:
+      summary: Actualizar un pago
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentInput'
+      responses:
+        '200':
+          description: Pago actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentInput'
+    delete:
+      summary: Eliminar un pago
+      responses:
+        '200':
+          description: Pago eliminado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Payment with id: 1 deleted successfully"
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        firstname:
+          type: string
+        lastname:
+          type: string
+        phonenumber:
+          type: string
+        email:
+          type: string
+          format: email
+        age:
+          type: integer
+          format: int32
+      required:
+        - id
+        - firstname
+        - lastname
+        - phonenumber
+        - email
+        - age
+
+    UserInput:
+      type: object
+      properties:
+        firstname:
+          type: string
+        lastname:
+          type: string
+        phonenumber:
+          type: string
+        email:
+          type: string
+          format: email
+        age:
+          type: integer
+          format: int32
+      required:
+        - firstname
+        - lastname
+        - phonenumber
+        - email
+        - age
+
+    Address:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        user_id:
+          type: integer
+          format: int32
+        address_line:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+      required:
+        - id
+        - user_id
+        - address_line
+        - city
+        - country
+
+    AddressInput:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          format: int32
+        address_line:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+      required:
+        - user_id
+        - address_line
+        - city
+        - country
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        user_id:
+          type: integer
+          format: int32
+        description:
+          type: string
+        amount:
+          type: number
+          format: float
+      required:
+        - id
+        - user_id
+        - description
+        - amount
+
+    OrderInput:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          format: int32
+        description:
+          type: string
+        amount:
+          type: number
+          format: float
+      required:
+        - user_id
+        - description
+        - amount
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        order_id:
+          type: integer
+          format: int32
+        payment_method:
+          type: string
+        paid:
+          type: boolean
+      required:
+        - id
+        - order_id
+        - payment_method
+        - paid
+
+    PaymentInput:
+      type: object
+      properties:
+        order_id:
+          type: integer
+          format: int32
+        payment_method:
+          type: string
+        paid:
+          type: boolean
+      required:
+        - order_id
+        - payment_method
+        - paid
