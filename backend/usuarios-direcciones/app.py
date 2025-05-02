@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import mysql.connector
 import schemas
+import pandas as pd
 
 app = FastAPI()
 
@@ -15,13 +16,26 @@ app.add_middleware(
 )
 
 db_config = {
-    "host": "172.31.22.204",  # IP privada de tu instancia MySQL en AWS
-    "port": 8005,
+    "host": "db_usuarios",
+    "port": 3306,
     "user": "root",
     "password": "utec",
-    "database": "bd_api_employees"
+    "database": "usuarios_db"
 }
 
+def poblar_si_vacio():
+    conn = mysql.connector.connect(
+        host="db_usuarios", user="root", password="utec", database="usuarios_db"
+    )
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM Users")
+    if cursor.fetchone()[0] == 0:
+        print("📥 Poniendo datos desde CSV...")
+        df = pd.read_csv("/data/users.csv")
+        for _, row in df.iterrows():
+            cursor.execute("INSERT INTO Users (...) VALUES (...)", (...))
+        conn.commit()
+        
 def get_db():
     return mysql.connector.connect(**db_config)
 

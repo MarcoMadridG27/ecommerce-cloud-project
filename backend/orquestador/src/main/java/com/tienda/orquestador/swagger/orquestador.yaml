@@ -1,0 +1,109 @@
+openapi: 3.0.3
+info:
+  title: API Orquestador - Tienda de Comercio Electrónico
+  description: API que orquesta la obtención de resumen de compra incluyendo orden, pagos, usuario y productos.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8081
+    description: Servidor local del orquestador
+
+paths:
+  /resumen/{ordenId}:
+    get:
+      summary: Obtener resumen de compra
+      description: Devuelve los detalles de la orden, usuario asociado, lista de productos y pagos realizados.
+      parameters:
+        - name: ordenId
+          in: path
+          required: true
+          description: ID de la orden
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Resumen encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumenCompra'
+        '404':
+          description: Orden no encontrada
+        '500':
+          description: Error del servidor
+
+components:
+  schemas:
+    ResumenCompra:
+      type: object
+      properties:
+        orden:
+          $ref: '#/components/schemas/Orden'
+        pagos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pago'
+        usuario:
+          $ref: '#/components/schemas/Usuario'
+        productos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Producto'
+
+    Orden:
+      type: object
+      properties:
+        id:
+          type: string
+        usuarioId:
+          type: string
+        productos:
+          type: array
+          items:
+            type: object
+            properties:
+              producto_id:
+                type: string
+              cantidad:
+                type: integer
+        total:
+          type: number
+          format: float
+        fecha:
+          type: string
+          format: date-time
+
+    Pago:
+      type: object
+      properties:
+        id:
+          type: string
+        orden_id:
+          type: string
+        monto:
+          type: number
+          format: float
+        fecha:
+          type: string
+          format: date-time
+
+    Usuario:
+      type: object
+      properties:
+        id:
+          type: string
+        nombre:
+          type: string
+        email:
+          type: string
+
+    Producto:
+      type: object
+      properties:
+        id:
+          type: string
+        nombre:
+          type: string
+        precio:
+          type: number
+          format: float

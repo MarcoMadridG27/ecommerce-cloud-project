@@ -1,0 +1,5 @@
+fastapi[standard]
+mysql-connector-python
+pydantic
+faker
+pandas

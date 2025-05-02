@@ -1,0 +1,90 @@
+services:
+  # Microservicio de Orquestador
+  orquestador:
+    build: ./orquestador
+    ports:
+      - "8081:8081"
+    networks:
+      - tienda_net
+    depends_on:
+      - usuarios-direcciones
+      - productos-inventarios
+      - ordenes-pagos
+
+  # Microservicio de Órdenes y Pagos (Deno)
+  ordenes-pagos:
+    build: ./ordenes-pagos
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ordenes-pagos/data:/app/data
+    networks:
+      - tienda_net
+    depends_on:
+      - db_ordenes_pagos
+
+  # Microservicio de Productos e Inventarios (Java)
+  productos-inventarios:
+    build: ./productos-inventario
+    ports:
+      - "8082:8082"
+    environment:
+      - DATABASE_URL=postgres://user:password@db_productos:5432/productos_db
+    volumes:
+      - ./productos-inventario/data:/app/data
+    networks:
+      - tienda_net
+    depends_on:
+      - db_productos
+
+  # Microservicio de Usuarios y Direcciones (Python)
+  usuarios-direcciones:
+    build: ./usuarios-direcciones
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=mysql://root:utec@db_usuarios:3306/usuarios_db
+    volumes:
+      - ./usuarios-direcciones/data:/programas/api-users/data
+    networks:
+      - tienda_net
+    depends_on:
+      - db_usuarios
+
+  # Base de datos para Usuarios (MySQL)
+  db_usuarios:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: utec
+      MYSQL_DATABASE: usuarios_db
+    volumes:
+      - ./usuarios-direcciones/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./usuarios-direcciones/data:/var/lib/mysql-files
+    networks:
+      - tienda_net
+
+  # Base de datos para Productos e Inventarios (PostgreSQL)
+  db_productos:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: productos_db
+    volumes:
+      - ./productos-inventario/src/resources/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - tienda_net
+
+  # Base de datos para Órdenes y Pagos (MongoDB)
+  db_ordenes_pagos:
+    image: mongo:4
+    environment:
+      MONGO_INITDB_DATABASE: ordenes_pagos
+    volumes:
+      - ./ordenes-pagos/data:/data
+    networks:
+      - tienda_net
+
+networks:
+  tienda_net:
+    driver: bridge

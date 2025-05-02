@@ -1,7 +1,8 @@
 import { MongoClient } from "../deps.ts";
 
+// Cambia "localhost" por el nombre del servicio de MongoDB en Docker
 const client = new MongoClient();
-await client.connect("mongodb://localhost:27017");
+await client.connect("mongodb://db_ordenes_pagos:27017");  // Cambiado a db_ordenes_pagos
 
 const db = client.database("ecommerce");
 
