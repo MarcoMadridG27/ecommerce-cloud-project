@@ -27,7 +27,7 @@ services:
   productos-inventarios:
     build: ./productos-inventario
     ports:
-      - "8082:8082"
+      - "8082:8000"
     environment:
       - DATABASE_URL=postgres://user:password@db_productos:5432/productos_db
     volumes:

@@ -1,5 +1,5 @@
 CREATE TABLE Users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT PRIMARY KEY,
     firstname VARCHAR(100) NOT NULL,
     lastname VARCHAR(100) NOT NULL,
     phonenumber VARCHAR(20),
@@ -8,8 +8,7 @@ CREATE TABLE Users (
 );
 
 CREATE TABLE Addresses (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
+    user_id INT PRIMARY KEY,
     address_line VARCHAR(255),
     city VARCHAR(100),
     country VARCHAR(100),
@@ -17,7 +16,7 @@ CREATE TABLE Addresses (
 );
 
 CREATE TABLE Notifications (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT PRIMARY KEY,
     user_id INT,
     message TEXT,
     timestamp DATETIME,
@@ -26,7 +25,7 @@ CREATE TABLE Notifications (
 );
 
 CREATE TABLE SupportTickets (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT PRIMARY KEY,
     user_id INT,
     subject VARCHAR(255),
     description TEXT,

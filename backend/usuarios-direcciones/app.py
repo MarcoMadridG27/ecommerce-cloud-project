@@ -24,21 +24,60 @@ db_config = {
 }
 
 def poblar_si_vacio():
-    conn = mysql.connector.connect(
-        host="db_usuarios", user="root", password="utec", database="usuarios_db"
-    )
+    conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(*) FROM Users")
     if cursor.fetchone()[0] == 0:
         print("📥 Poniendo datos desde CSV...")
-        df = pd.read_csv("/data/users.csv")
-        for _, row in df.iterrows():
-            cursor.execute("INSERT INTO Users (...) VALUES (...)", (...))
+
+        cargar_users(cursor)
+        cargar_addresses(cursor)
+        cargar_notifications(cursor)
+        cargar_support_tickets(cursor)
+
         conn.commit()
-        
+    conn.close()
+def cargar_users(cursor):
+    df = pd.read_csv("/programas/api-users/data/users.csv", header=None,
+                     names=["id", "firstname", "lastname", "phonenumber", "email", "age"])
+    for _, row in df.iterrows():
+        cursor.execute("""
+            INSERT INTO Users (id, firstname, lastname, phonenumber, email, age)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (int(row["id"]), row["firstname"], row["lastname"], row["phonenumber"], row["email"], int(row["age"])))
+
+def cargar_addresses(cursor):
+    df = pd.read_csv("/programas/api-users/data/addresses.csv", header=None,
+                     names=["user_id", "address_line", "city", "country"])
+    for _, row in df.iterrows():
+        cursor.execute("""
+            INSERT INTO Addresses (user_id, address_line, city, country)
+            VALUES (%s, %s, %s, %s)
+        """, (int(row["user_id"]), row["address_line"], row["city"], row["country"]))
+
+def cargar_notifications(cursor):
+    df = pd.read_csv("/programas/api-users/data/notifications.csv", header=None,
+                     names=["id", "user_id", "message", "timestamp", "read"])
+    for _, row in df.iterrows():
+        cursor.execute("""
+            INSERT INTO Notifications (id, user_id, message, timestamp, `read`)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (int(row["id"]), int(row["user_id"]), row["message"], row["timestamp"], bool(int(row["read"]))))
+
+def cargar_support_tickets(cursor):
+    df = pd.read_csv("/programas/api-users/data/supporttickets.csv", header=None,
+                     names=["id", "user_id", "subject", "description", "status", "created_at"])
+    for _, row in df.iterrows():
+        cursor.execute("""
+            INSERT INTO SupportTickets (id, user_id, subject, description, status, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (
+            int(row["id"]), int(row["user_id"]), row["subject"], row["description"],
+            row["status"], row["created_at"]
+        ))
 def get_db():
     return mysql.connector.connect(**db_config)
-
+poblar_si_vacio()
 @app.get("/")
 def echo():
     return {"message": "Echo Test OK"}
@@ -65,11 +104,19 @@ def add_user(user: schemas.User):
 @app.get("/users/{id}")
 def get_user(id: int):
     db = get_db()
-    cursor = db.cursor()
+    cursor = db.cursor(dictionary=True)  # <-- Importante
     cursor.execute("SELECT * FROM Users WHERE id = %s", (id,))
     result = cursor.fetchone()
     db.close()
-    return {"user": result}
+    if result:
+        return {
+            "id": result["id"],
+            "nombre": result["firstname"] + " " + result["lastname"],
+            "email": result["email"]
+        }
+    else:
+        return {"error": "Usuario no encontrado"}
+
 
 @app.put("/users/{id}")
 def update_user(id: int, user: schemas.User):
