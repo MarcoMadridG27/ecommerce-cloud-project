@@ -14,8 +14,19 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
+
 @Service
 public class ResumenService {
+    @Value("${servicio.ordenes.url}")
+    private String ordenesUrl;
+
+    @Value("${servicio.usuarios.url}")
+    private String usuariosUrl;
+
+    @Value("${servicio.productos.url}")
+    private String productosUrl;
+
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -39,18 +50,16 @@ public class ResumenService {
     }
 
     private Orden getOrden(String ordenId) {
-        String url = "http://ordenes-pagos:8000/ordenes/" + ordenId;
+        String url = ordenesUrl + "/ordenes/" + ordenId;
         System.out.println("🔎 Solicitando orden desde: " + url);
         try {
-            // 1. Obtener la respuesta como String
+
             ResponseEntity<String> rawResponse = restTemplate.getForEntity(url, String.class);
             String body = rawResponse.getBody();
     
-            // 2. Imprimir el JSON crudo
             System.out.println("📦 JSON recibido:");
             System.out.println(body);
     
-            // 3. Mapear manualmente con ObjectMapper
             ObjectMapper mapper = new ObjectMapper();
             Orden orden = mapper.readValue(body, Orden.class);
             return orden;
@@ -63,23 +72,23 @@ public class ResumenService {
     
 
     private List<Pago> getPagos(String ordenId) {
-        String url = "http://ordenes-pagos:8000/pagos/orden/" + ordenId;
+        String url = ordenesUrl + "/pagos/orden/" + ordenId;
         System.out.println("🔎 Solicitando pagos desde: " + url);
         try {
             ResponseEntity<Pago[]> response = restTemplate.getForEntity(url, Pago[].class);
             if (response.getBody() != null) {
                 return Arrays.asList(response.getBody());
             } else {
-                return new ArrayList<>(); // ✅ Evita el NullPointerException
+                return new ArrayList<>(); 
             }
         } catch (Exception e) {
             System.err.println("❌ Error al obtener pagos: " + e.getMessage());
-            return new ArrayList<>(); // ⚠️ Retorna lista vacía en caso de error
+            return new ArrayList<>();
         }
     }
 
     private Usuario getUsuario(String usuarioId) {
-        String url = "http://usuarios-direcciones:8000/users/" + usuarioId;
+        String url = usuariosUrl + "/users/" + usuarioId;
         System.out.println("🔎 Solicitando usuario desde: " + url);
         try {
             ResponseEntity<Usuario> response = restTemplate.getForEntity(url, Usuario.class);
@@ -94,7 +103,7 @@ public class ResumenService {
         List<Producto> productos = new ArrayList<>();
         for (Map<String, Object> p : productosInfo) {
             String productoId = (String) p.get("producto_id");
-            String url = "http://productos-inventarios:8000/products/" + productoId;
+            String url = productosUrl + "/products/" + productoId;
             System.out.println("🔎 Solicitando producto desde: " + url);
             try {
                 ResponseEntity<Producto> response = restTemplate.getForEntity(url, Producto.class);

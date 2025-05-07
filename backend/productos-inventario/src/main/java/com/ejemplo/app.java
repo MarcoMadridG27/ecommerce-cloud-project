@@ -12,6 +12,16 @@ public class app {
         cargarDatosSiVacio();
         HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
 
+        server.createContext("/", exchange -> {
+            if ("GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+                String response = "echo test ok";
+                exchange.sendResponseHeaders(200, response.length());
+                exchange.getResponseBody().write(response.getBytes(StandardCharsets.UTF_8));
+            } else {
+                exchange.sendResponseHeaders(405, -1); 
+            }
+        });
+
         server.createContext("/products", wrapWithCors(exchange -> {
             switch (exchange.getRequestMethod()) {
                 case "GET":
@@ -193,6 +203,89 @@ public class app {
             }
             exchange.close();
         }));
+        server.createContext("/inventories/", wrapWithCors(exchange -> {
+            String[] pathParts = exchange.getRequestURI().getPath().split("/");
+            if (pathParts.length < 3) {
+                exchange.sendResponseHeaders(400, -1);
+                exchange.close();
+                return;
+            }
+        
+            int productId;
+            try {
+                productId = Integer.parseInt(pathParts[2]);
+            } catch (NumberFormatException e) {
+                exchange.sendResponseHeaders(400, -1);
+                exchange.close();
+                return;
+            }
+        
+            switch (exchange.getRequestMethod()) {
+                case "GET":
+                    try (Connection conn = DBconnection.getConnection();
+                         PreparedStatement stmt = conn.prepareStatement("SELECT product_id, quantity FROM inventory WHERE product_id = ?")) {
+                        stmt.setInt(1, productId);
+                        ResultSet rs = stmt.executeQuery();
+                        if (rs.next()) {
+                            String json = String.format("{\"product_id\":%d,\"quantity\":%d}",
+                                    rs.getInt("product_id"), rs.getInt("quantity"));
+                            byte[] response = json.getBytes(StandardCharsets.UTF_8);
+                            exchange.sendResponseHeaders(200, response.length);
+                            exchange.getResponseBody().write(response);
+                        } else {
+                            exchange.sendResponseHeaders(404, -1);
+                        }
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        exchange.sendResponseHeaders(500, -1);
+                    }
+                    break;
+            
+                case "PUT":
+                    String putBody;
+                    try (BufferedReader reader = new BufferedReader(
+                            new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8))) {
+                        putBody = reader.lines().collect(Collectors.joining("\n"));
+                    }
+                    try (Connection conn = DBconnection.getConnection();
+                         PreparedStatement stmt = conn.prepareStatement("UPDATE inventory SET quantity = ? WHERE product_id = ?")) {
+                        int quantity = Integer.parseInt(putBody.replaceAll(".*\"quantity\":(\\d+).*", "$1"));
+                        stmt.setInt(1, quantity);
+                        stmt.setInt(2, productId);
+                        int rows = stmt.executeUpdate();
+                        if (rows > 0) {
+                            exchange.sendResponseHeaders(200, -1);
+                        } else {
+                            exchange.sendResponseHeaders(404, -1);
+                        }
+                    } catch (SQLException | NumberFormatException e) {
+                        e.printStackTrace();
+                        exchange.sendResponseHeaders(500, -1);
+                    }
+                    break;
+            
+                case "DELETE":
+                    try (Connection conn = DBconnection.getConnection();
+                         PreparedStatement stmt = conn.prepareStatement("DELETE FROM inventory WHERE product_id = ?")) {
+                        stmt.setInt(1, productId);
+                        int rows = stmt.executeUpdate();
+                        if (rows > 0) {
+                            exchange.sendResponseHeaders(200, -1);
+                        } else {
+                            exchange.sendResponseHeaders(404, -1);
+                        }
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        exchange.sendResponseHeaders(500, -1);
+                    }
+                    break;
+            
+                default:
+                    exchange.sendResponseHeaders(405, -1);
+            }
+            exchange.close();
+        }));
+        
         
         server.createContext("/categories", wrapWithCors(exchange -> {
             switch (exchange.getRequestMethod()) {
@@ -239,6 +332,49 @@ public class app {
             }
             exchange.close();
         }));
+        server.createContext("/categories/", wrapWithCors(exchange -> {
+            String[] pathParts = exchange.getRequestURI().getPath().split("/");
+            if (pathParts.length < 3) {
+                exchange.sendResponseHeaders(400, -1); // Bad request si no se pasa el ID
+                exchange.close();
+                return;
+            }
+        
+            int id;
+            try {
+                id = Integer.parseInt(pathParts[2]);
+            } catch (NumberFormatException e) {
+                exchange.sendResponseHeaders(400, -1); // ID no es numérico
+                exchange.close();
+                return;
+            }
+        
+            switch (exchange.getRequestMethod()) {
+                case "GET":
+                    try (Connection conn = DBconnection.getConnection();
+                         PreparedStatement stmt = conn.prepareStatement("SELECT id, category_name FROM categories WHERE id = ?")) {
+                        stmt.setInt(1, id);
+                        ResultSet rs = stmt.executeQuery();
+                        if (rs.next()) {
+                            String json = String.format("{\"id\":%d,\"name\":\"%s\"}",
+                                    rs.getInt("id"), rs.getString("category_name"));
+                            byte[] getResponse = json.getBytes(StandardCharsets.UTF_8);
+                            exchange.sendResponseHeaders(200, getResponse.length);
+                            exchange.getResponseBody().write(getResponse);
+                        } else {
+                            exchange.sendResponseHeaders(404, -1); // No encontrado
+                        }
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        exchange.sendResponseHeaders(500, -1);
+                    }
+                    break;
+                default:
+                    exchange.sendResponseHeaders(405, -1); // Método no permitido
+            }
+            exchange.close();
+        }));
+        
         server.setExecutor(null);
         server.start();
         System.out.println("Server running on http://localhost:8000");

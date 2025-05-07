@@ -55,7 +55,9 @@ ordenesRouter
     const body = await ctx.request.body().value;
     const usuario_id = body.usuario_id;
 
-    const response = await fetch(`http://usuarios-direcciones:8000/users/${usuario_id}`);
+    const usuariosHost = Deno.env.get("USUARIOS_DIRECCIONES_HOST") || "http://localhost:8001";
+    const response = await fetch(`${usuariosHost}/users/${usuario_id}`);
+    
     if (!response.ok) {
       ctx.response.status = 400;
       ctx.response.body = { error: "Usuario no válido o no encontrado" };

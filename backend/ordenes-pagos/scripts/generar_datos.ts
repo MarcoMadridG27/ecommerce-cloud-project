@@ -1,7 +1,7 @@
 import { MongoClient } from "https://deno.land/x/mongo@v0.31.1/mod.ts";
 
 const client = new MongoClient();
-await client.connect("mongodb://db_ordenes_pagos:27017");
+await client.connect("mongodb://172.31.28.116:27017");
 const db = client.database("ordenes_pagos");
 const ordenes = db.collection("ordenes");
 const pagos = db.collection("pagos");

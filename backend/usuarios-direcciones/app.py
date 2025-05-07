@@ -3,6 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 import mysql.connector
 import schemas
 import pandas as pd
+from passlib.hash import bcrypt
+from email.message import EmailMessage
+from jinja2 import Environment, FileSystemLoader
+import smtplib
+import os
+
 
 app = FastAPI()
 
@@ -16,12 +22,13 @@ app.add_middleware(
 )
 
 db_config = {
-    "host": "db_usuarios",
-    "port": 3306,
-    "user": "root",
-    "password": "utec",
-    "database": "usuarios_db"
+    "host": os.environ.get("DB_HOST", "localhost"),
+    "port": int(os.environ.get("DB_PORT", 3306)),
+    "user": os.environ.get("DB_USER", "root"),
+    "password": os.environ.get("DB_PASSWORD", "utec"),
+    "database": os.environ.get("DB_NAME", "usuarios_db")
 }
+
 
 def poblar_si_vacio():
     conn = mysql.connector.connect(**db_config)
@@ -38,13 +45,25 @@ def poblar_si_vacio():
         conn.commit()
     conn.close()
 def cargar_users(cursor):
-    df = pd.read_csv("/programas/api-users/data/users.csv", header=None,
-                     names=["id", "firstname", "lastname", "phonenumber", "email", "age"])
+    df = pd.read_csv(
+        "/programas/api-users/data/users.csv",
+        header=None,
+        names=["id", "firstname", "lastname", "phonenumber", "email", "age", "password"]
+    )
+
     for _, row in df.iterrows():
         cursor.execute("""
-            INSERT INTO Users (id, firstname, lastname, phonenumber, email, age)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (int(row["id"]), row["firstname"], row["lastname"], row["phonenumber"], row["email"], int(row["age"])))
+            INSERT INTO Users (id, firstname, lastname, phonenumber, email, age, password)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (
+            int(row["id"]),
+            row["firstname"],
+            row["lastname"],
+            row["phonenumber"],
+            row["email"],
+            int(row["age"]),
+            row["password"]
+        ))
 
 def cargar_addresses(cursor):
     df = pd.read_csv("/programas/api-users/data/addresses.csv", header=None,
@@ -95,8 +114,9 @@ def get_users():
 def add_user(user: schemas.User):
     db = get_db()
     cursor = db.cursor()
-    sql = "INSERT INTO Users (firstname, lastname, phonenumber, email, age) VALUES (%s, %s, %s, %s, %s)"
-    cursor.execute(sql, (user.firstname, user.lastname, user.phonenumber, user.email, user.age))
+    sql = "INSERT INTO Users (firstname, lastname, phonenumber, email, age,password) VALUES (%s, %s, %s, %s, %s,%s)"
+    hashed_password = bcrypt.hash(user.password)
+    cursor.execute(sql, (user.firstname, user.lastname, user.phonenumber, user.email, user.age,hashed_password))
     db.commit()
     db.close()
     return {"message": "User created successfully"}
@@ -279,3 +299,54 @@ def delete_supportticket(id: int):
     db.close()
     return {"message": "Support ticket deleted successfully"}
 
+
+
+@app.post("/login")
+def login(data: schemas.LoginData):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM Users WHERE email = %s", (data.email,))
+    user = cursor.fetchone()
+    db.close()
+
+    if user and bcrypt.checkpw(data.password.encode('utf-8'), user["password"].encode('utf-8')):
+        return {"message": "Login successful", "user_id": user["id"], "name": user["firstname"]}
+    return {"error": "Invalid email or password"}
+
+
+
+def enviar_correo_confirmacion_html(destinatario: str, nombre: str):
+    remitente = "marco.madrid@utec.edu.pe"
+    clave = "kmxw tfti pvvs pzlq"
+
+    env = Environment(loader=FileSystemLoader("templates"))
+    template = env.get_template("welcome_email.html")
+    html_content = template.render(nombre=nombre)
+
+    mensaje = EmailMessage()
+    mensaje["Subject"] = "Bienvenido a nuestra tienda"
+    mensaje["From"] = remitente
+    mensaje["To"] = destinatario
+    mensaje.set_content("Este mensaje requiere un cliente compatible con HTML.")
+    mensaje.add_alternative(html_content, subtype="html")
+
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+            smtp.login(remitente, clave)
+            smtp.send_message(mensaje)
+            print(f"✅ Correo HTML enviado a {destinatario}")
+    except Exception as e:
+        print("❌ Error al enviar correo:", e)
+
+@app.post("/register")
+def register(user: schemas.User):
+    db = get_db()
+    cursor = db.cursor()
+    hashed_pw = bcrypt.hash(user.password)
+    sql = "INSERT INTO Users (firstname, lastname, phonenumber, email, age, password) VALUES (%s, %s, %s, %s, %s, %s)"
+    cursor.execute(sql, (user.firstname, user.lastname, user.phonenumber, user.email, user.age, hashed_pw))
+    db.commit()
+    db.close()
+
+    enviar_correo_confirmacion_html(user.email, user.firstname) 
+    return {"message": "User registered successfully. Confirmation email sent."}

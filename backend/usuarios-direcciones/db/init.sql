@@ -1,9 +1,10 @@
 CREATE TABLE Users (
-    id INT PRIMARY KEY,
+    id INT PRIMARY KEY AUTO_INCREMENT,
     firstname VARCHAR(100) NOT NULL,
     lastname VARCHAR(100) NOT NULL,
     phonenumber VARCHAR(20),
     email VARCHAR(100) UNIQUE,
+    password VARCHAR(255) NOT NULL,
     age INT
 );
 
@@ -33,3 +34,4 @@ CREATE TABLE SupportTickets (
     created_at DATETIME,
     FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
 );
+

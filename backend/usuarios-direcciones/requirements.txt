@@ -1,5 +1,10 @@
 fastapi[standard]
-mysql-connector-python
+uvicorn
 pydantic
-faker
+mysql-connector-python
 pandas
+bcrypt
+email-validator
+python-multipart
+jinja2
+passlib[bcrypt]

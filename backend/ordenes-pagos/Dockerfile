@@ -5,7 +5,8 @@ WORKDIR /app
 
 COPY . .
 
-RUN deno cache deps.ts
-RUN deno cache main.ts scripts/generar_datos.ts
+RUN deno cache deps.ts \
+    && deno cache main.ts scripts/generar_datos.ts
 
-CMD ["sh", "-c", "deno run --allow-net --allow-read scripts/generar_datos.ts && deno run --allow-net main.ts"]
+CMD deno run --allow-read --allow-net --allow-env scripts/generar_datos.ts || true \
+    && deno run --allow-net --allow-env main.ts
