@@ -4,7 +4,7 @@ COPY . .
 RUN mvn clean package -DskipTests
 
 FROM openjdk:17-jdk-slim
-WORKDIR /app                  # ✅ Agregado
+WORKDIR /app
 COPY --from=build /app/target/orquestador-0.0.1-SNAPSHOT.jar orquestador.jar
 EXPOSE 8081
 CMD ["java", "-jar", "orquestador.jar"]
