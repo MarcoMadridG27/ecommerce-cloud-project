@@ -126,29 +126,51 @@ def add_user(user: schemas.User):
 @app.get("/users/{id}")
 def get_user(id: int):
     db = get_db()
-    cursor = db.cursor(dictionary=True)  # <-- Importante
-    cursor.execute("SELECT * FROM Users WHERE id = %s", (id,))
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT id, firstname, lastname, phonenumber, email, age FROM Users WHERE id = %s", (id,))
     result = cursor.fetchone()
     db.close()
+
     if result:
         return {
             "id": result["id"],
-            "nombre": result["firstname"] + " " + result["lastname"],
-            "email": result["email"]
+            "nombre": f"{result['firstname']} {result['lastname']}",
+            "phonenumber": result["phonenumber"],
+            "email": result["email"],
+            "age": result["age"]
         }
     else:
-        return {"error": "Usuario no encontrado"}
+        raise HTTPException(status_code=404, detail="User not found")
+
 
 
 @app.put("/users/{id}")
 def update_user(id: int, user: schemas.User):
     db = get_db()
     cursor = db.cursor()
-    sql = "UPDATE Users SET firstname=%s, lastname=%s, phonenumber=%s, email=%s, age=%s WHERE id=%s"
-    cursor.execute(sql, (user.firstname, user.lastname, user.phonenumber, user.email, user.age, id))
+
+    if user.password:
+        hashed_password = bcrypt.hash(user.password)
+        sql = """UPDATE Users 
+                 SET firstname=%s, lastname=%s, phonenumber=%s, email=%s, age=%s, password=%s 
+                 WHERE id=%s"""
+        cursor.execute(sql, (
+            user.firstname, user.lastname, user.phonenumber, user.email, user.age,
+            hashed_password, id
+        ))
+    else:
+
+        sql = """UPDATE Users 
+                 SET firstname=%s, lastname=%s, phonenumber=%s, email=%s, age=%s 
+                 WHERE id=%s"""
+        cursor.execute(sql, (
+            user.firstname, user.lastname, user.phonenumber, user.email, user.age, id
+        ))
+
     db.commit()
     db.close()
     return {"message": "User updated successfully"}
+
 
 @app.delete("/users/{id}")
 def delete_user(id: int):
