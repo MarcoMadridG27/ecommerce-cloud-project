@@ -67,7 +67,7 @@ ordenesRouter
     body.fecha = new Date().toISOString();
     const id = await ordenes.insertOne(body);
     ctx.response.status = 201;
-    ctx.response.headers.set("Content-Type", "application/json");  // ✅
+    ctx.response.headers.set("Content-Type", "application/json"); 
     ctx.response.body = { insertedId: id };
   });
 

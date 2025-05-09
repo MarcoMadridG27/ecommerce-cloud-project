@@ -179,11 +179,15 @@ def add_adress(adress: schemas.Address):
 @app.get("/addresses/{id}")
 def get_adress(id: int):
     db = get_db()
-    cursor = db.cursor()
+    cursor = db.cursor(dictionary=True)
     cursor.execute("SELECT * FROM Addresses WHERE id = %s", (id,))
     result = cursor.fetchone()
     db.close()
-    return {"adress": result}
+    if result:
+        return {"address": result}
+    else:
+        return {"error": "Address not found"}
+
 
 @app.put("/addresses/{id}")
 def update_adress(id: int, adress: schemas.Address):
@@ -227,11 +231,14 @@ def add_notification(notification: schemas.Notification):
 @app.get("/notifications/{id}")
 def get_notification(id: int):
     db = get_db()
-    cursor = db.cursor()
+    cursor = db.cursor(dictionary=True)
     cursor.execute("SELECT * FROM Notifications WHERE id = %s", (id,))
     result = cursor.fetchone()
     db.close()
-    return {"notification": result}
+    if result:
+        return {"notification": result}
+    else:
+        return {"error": "Notification not found"}
 
 @app.put("/notifications/{id}")
 def update_notification(id: int, notification: schemas.Notification):
@@ -274,11 +281,14 @@ def add_supportticket(supportticket: schemas.SupportTicket):
 @app.get("/supporttickets/{id}")
 def get_supportticket(id: int):
     db = get_db()
-    cursor = db.cursor()
+    cursor = db.cursor(dictionary=True)
     cursor.execute("SELECT * FROM SupportTickets WHERE id = %s", (id,))
     result = cursor.fetchone()
     db.close()
-    return {"supportticket": result}
+    if result:
+        return {"supportticket": result}
+    else:
+        return {"error": "Support ticket not found"}
 
 @app.put("/supporttickets/{id}")
 def update_supportticket(id: int, supportticket: schemas.SupportTicket):
