@@ -8,6 +8,8 @@ from email.message import EmailMessage
 from jinja2 import Environment, FileSystemLoader
 import smtplib
 import os
+from fastapi import HTTPException
+
 
 
 app = FastAPI()
@@ -167,46 +169,53 @@ def get_adresses():
     return {"addresses": result}
 
 @app.post("/addresses")
-def add_adress(adress: schemas.Address):
-    db = get_db()
-    cursor = db.cursor()
-    sql = "INSERT INTO Addresses (user_id, address_line, city, country) VALUES (%s, %s, %s, %s)"
-    cursor.execute(sql, (adress.user_id, adress.address_line, adress.city, adress.country))
-    db.commit()
-    db.close()
-    return {"message": "Adress created successfully"}
-
-@app.get("/addresses/{id}")
-def get_adress(id: int):
+def add_address(address: schemas.Address):
     db = get_db()
     cursor = db.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM Addresses WHERE id = %s", (id,))
+    cursor.execute("SELECT * FROM Addresses WHERE user_id = %s", (address.user_id,))
+    if cursor.fetchone():
+        db.close()
+        raise HTTPException(status_code=409, detail="User already has an address")
+
+    cursor = db.cursor()
+    sql = "INSERT INTO Addresses (user_id, address_line, city, country) VALUES (%s, %s, %s, %s)"
+    cursor.execute(sql, (address.user_id, address.address_line, address.city, address.country))
+    db.commit()
+    db.close()
+    return {"message": "Address created successfully"}
+
+@app.get("/addresses/user/{user_id}")
+def get_address_by_user_id(user_id: int):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM Addresses WHERE user_id = %s", (user_id,))
     result = cursor.fetchone()
     db.close()
+
     if result:
         return {"address": result}
     else:
-        return {"error": "Address not found"}
+        return {"error": "Address not found for user"}
 
 
-@app.put("/addresses/{id}")
-def update_adress(id: int, adress: schemas.Address):
+@app.put("/addresses/user/{user_id}")
+def update_address(user_id: int, address: schemas.Address):
     db = get_db()
     cursor = db.cursor()
-    sql = "UPDATE Addresses SET user_id=%s, address_line=%s, city=%s, country=%s WHERE id=%s"
-    cursor.execute(sql, (adress.user_id, adress.address_line, adress.city, adress.country, id))
+    sql = "UPDATE Addresses SET address_line=%s, city=%s, country=%s WHERE user_id=%s"
+    cursor.execute(sql, (address.address_line, address.city, address.country, user_id))
     db.commit()
     db.close()
-    return {"message": "Adress updated successfully"}
+    return {"message": "Address updated successfully"}
 
-@app.delete("/addresses/{id}")
-def delete_adress(id: int):
+@app.delete("/addresses/user/{user_id}")
+def delete_address(user_id: int):
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("DELETE FROM Addresses WHERE id=%s", (id,))
+    cursor.execute("DELETE FROM Addresses WHERE user_id=%s", (user_id,))
     db.commit()
     db.close()
-    return {"message": "Adress deleted successfully"}
+    return {"message": "Address deleted successfully"}
 
 @app.get("/notifications")
 def get_notifications():
@@ -309,8 +318,6 @@ def delete_supportticket(id: int):
     db.close()
     return {"message": "Support ticket deleted successfully"}
 
-
-
 @app.post("/login")
 def login(data: schemas.LoginData):
     db = get_db()
@@ -319,11 +326,9 @@ def login(data: schemas.LoginData):
     user = cursor.fetchone()
     db.close()
 
-    if user and bcrypt.checkpw(data.password.encode('utf-8'), user["password"].encode('utf-8')):
+    if user and bcrypt.verify(data.password, user["password"]):
         return {"message": "Login successful", "user_id": user["id"], "name": user["firstname"]}
-    return {"error": "Invalid email or password"}
-
-
+    raise HTTPException(status_code=401, detail="Invalid email or password")
 
 def enviar_correo_confirmacion_html(destinatario: str, nombre: str):
     remitente = "marco.madrid@utec.edu.pe"
