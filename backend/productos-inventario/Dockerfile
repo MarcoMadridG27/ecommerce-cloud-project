@@ -7,4 +7,6 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 COPY --from=build /app/target/productos-inventario-1.0-SNAPSHOT-jar-with-dependencies.jar app.jar
 COPY ./data /app/data
+COPY ./docs /app/docs
 CMD ["java", "-cp", "app.jar", "main.java.com.ejemplo.app"]
+
