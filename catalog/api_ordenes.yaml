@@ -6,14 +6,45 @@ info:
 
 servers:
   - url: http://localhost:8000
+    description: Servidor local
 
 paths:
   /ordenes:
     get:
-      summary: Listar todas las órdenes
+      summary: Listar órdenes paginadas
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
       responses:
         '200':
-          description: Lista de órdenes
+          description: Lista paginada de órdenes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  page:
+                    type: integer
+                  limit:
+                    type: integer
+                  total:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Orden'
     post:
       summary: Crear una nueva orden
       requestBody:
@@ -21,32 +52,49 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                usuario_id:
-                  type: string
-                productos:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      producto_id:
-                        type: string
-                      cantidad:
-                        type: number
-                total:
-                  type: number
-                estado:
-                  type: string
+              $ref: '#/components/schemas/OrdenInput'
       responses:
         '201':
           description: Orden creada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  insertedId:
+                    type: string
+
+  /ordenes/{id}:
+    get:
+      summary: Obtener una orden por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Orden encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Orden'
+        '404':
+          description: Orden no encontrada
+
   /pagos:
     get:
       summary: Listar todos los pagos
       responses:
         '200':
           description: Lista de pagos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pago'
     post:
       summary: Crear un nuevo pago
       requestBody:
@@ -54,16 +102,111 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                orden_id:
-                  type: string
-                metodo:
-                  type: string
-                monto:
-                  type: number
-                estado:
-                  type: string
+              $ref: '#/components/schemas/PagoInput'
       responses:
         '201':
           description: Pago registrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  insertedId:
+                    type: string
+
+  /pagos/orden/{orden_id}:
+    get:
+      summary: Obtener pagos por ID de orden
+      parameters:
+        - name: orden_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de pagos para una orden
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pago'
+
+components:
+  schemas:
+    Orden:
+      type: object
+      properties:
+        usuario_id:
+          type: string
+        productos:
+          type: array
+          items:
+            type: object
+            properties:
+              producto_id:
+                type: string
+              cantidad:
+                type: number
+        total:
+          type: number
+        fecha:
+          type: string
+          format: date-time
+        estado:
+          type: string
+          enum: [pendiente, enviado, entregado]
+
+    OrdenInput:
+      type: object
+      required: [usuario_id, productos, total, estado]
+      properties:
+        usuario_id:
+          type: string
+        productos:
+          type: array
+          items:
+            type: object
+            properties:
+              producto_id:
+                type: string
+              cantidad:
+                type: number
+        total:
+          type: number
+        estado:
+          type: string
+          enum: [pendiente, enviado, entregado]
+
+    Pago:
+      type: object
+      properties:
+        orden_id:
+          type: string
+        metodo:
+          type: string
+          enum: [tarjeta, transferencia, efectivo]
+        monto:
+          type: number
+        fecha:
+          type: string
+          format: date-time
+        estado:
+          type: string
+          enum: [pendiente, completado, fallido]
+
+    PagoInput:
+      type: object
+      required: [orden_id, metodo, monto, estado]
+      properties:
+        orden_id:
+          type: string
+        metodo:
+          type: string
+          enum: [tarjeta, transferencia, efectivo]
+        monto:
+          type: number
+        estado:
+          type: string
+          enum: [pendiente, completado, fallido]

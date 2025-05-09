@@ -1,23 +1,34 @@
 package com.tienda.orquestador.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 import java.util.Map;
 
 public class Orden {
+
+    @JsonProperty("_id")
     private String id;
+
+    @JsonProperty("usuario_id")
     private String usuarioId;
+
+    @JsonProperty("estado")
+    private String estado;
+
     private List<Map<String, Object>> productos;
     private Double total;
     private String fecha;
 
     public Orden() {}
 
-    public Orden(String id, String usuarioId, List<Map<String, Object>> productos, Double total, String fecha) {
+    public Orden(String id, String usuarioId, List<Map<String, Object>> productos, Double total, String fecha, String estado) {
         this.id = id;
         this.usuarioId = usuarioId;
         this.productos = productos;
         this.total = total;
         this.fecha = fecha;
+        this.estado=estado;
     }
 
     public String getId() {
@@ -58,5 +69,12 @@ public class Orden {
 
     public void setFecha(String fecha) {
         this.fecha = fecha;
+    }
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
     }
 }

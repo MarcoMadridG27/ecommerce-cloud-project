@@ -1,11 +1,14 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class User(BaseModel):
+    id: Optional[int] = None  
     firstname: str
     lastname: str
     phonenumber: str
     email: str
     age: int
+    password: str
 
 class Address(BaseModel):
     user_id: int
@@ -16,13 +19,16 @@ class Address(BaseModel):
 class Notification(BaseModel):
     user_id: int
     message: str
-    timestamp: str  #formato: "YYYY-MM-DD HH:MM:SS"
+    timestamp: str  
     read: bool
 
 class SupportTicket(BaseModel):
     user_id: int
     subject: str
     description: str
-    status: str  #'open', 'in_progress', 'resolved'
-    created_at: str  #formato: "YYYY-MM-DD HH:MM:SS"
+    status: str  
+    created_at: str  
 
+class LoginData(BaseModel):
+    email: str
+    password: str

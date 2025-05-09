@@ -9,7 +9,7 @@ servers:
     description: Servidor de desarrollo
 
 paths:
-  /user:
+  /users:
     get:
       summary: Obtener todos los usuarios
       responses:
@@ -166,164 +166,51 @@ paths:
               schema:
                 type: string
                 example: "Address with id: 1 deleted successfully"
-
-  /orders:
-    get:
-      summary: Obtener todas las órdenes
-      responses:
-        '200':
-          description: Lista de órdenes
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Order'
+  /register:
     post:
-      summary: Crear una nueva orden
+      summary: Registrar un nuevo usuario
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OrderInput'
+              $ref: '#/components/schemas/UserInput'
       responses:
         '201':
-          description: Orden creada
+          description: Usuario registrado exitosamente
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                example: "Order created successfully"
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User registered successfully"
+        '400':
+          description: Email ya registrado
 
-  /orders/{id}:
-    parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-          format: int32
-    get:
-      summary: Obtener una orden por ID
-      responses:
-        '200':
-          description: Detalles de la orden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Order'
-        '404':
-          description: Orden no encontrada
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "Order not found"
-    put:
-      summary: Actualizar una orden
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OrderInput'
-      responses:
-        '200':
-          description: Orden actualizada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderInput'
-    delete:
-      summary: Eliminar una orden
-      responses:
-        '200':
-          description: Orden eliminada
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "Order with id: 1 deleted successfully"
-
-  /payments:
-    get:
-      summary: Obtener todos los pagos
-      responses:
-        '200':
-          description: Lista de pagos
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Payment'
+  /login:
     post:
-      summary: Crear un nuevo pago
+      summary: Iniciar sesión
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PaymentInput'
-      responses:
-        '201':
-          description: Pago creado
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "Payment created successfully"
-
-  /payments/{id}:
-    parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-          format: int32
-    get:
-      summary: Obtener un pago por ID
+              $ref: '#/components/schemas/LoginData'
       responses:
         '200':
-          description: Detalles del pago
+          description: Login exitoso
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Payment'
-        '404':
-          description: Pago no encontrado
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "Payment not found"
-    put:
-      summary: Actualizar un pago
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PaymentInput'
-      responses:
-        '200':
-          description: Pago actualizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaymentInput'
-    delete:
-      summary: Eliminar un pago
-      responses:
-        '200':
-          description: Pago eliminado
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "Payment with id: 1 deleted successfully"
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Login successful"
+        '401':
+          description: Credenciales inválidas
 
 components:
   schemas:
@@ -345,6 +232,9 @@ components:
         age:
           type: integer
           format: int32
+        password:
+          type: string
+          format: password
       required:
         - id
         - firstname
@@ -352,6 +242,7 @@ components:
         - phonenumber
         - email
         - age
+        - password
 
     UserInput:
       type: object
@@ -368,12 +259,16 @@ components:
         age:
           type: integer
           format: int32
+        password:
+          type: string
+          format: password
       required:
         - firstname
         - lastname
         - phonenumber
         - email
         - age
+        - password
 
     Address:
       type: object
@@ -414,73 +309,15 @@ components:
         - address_line
         - city
         - country
-
-    Order:
+    LoginData:
       type: object
       properties:
-        id:
-          type: integer
-          format: int32
-        user_id:
-          type: integer
-          format: int32
-        description:
+        email:
           type: string
-        amount:
-          type: number
-          format: float
-      required:
-        - id
-        - user_id
-        - description
-        - amount
-
-    OrderInput:
-      type: object
-      properties:
-        user_id:
-          type: integer
-          format: int32
-        description:
+          format: email
+        password:
           type: string
-        amount:
-          type: number
-          format: float
+          format: password
       required:
-        - user_id
-        - description
-        - amount
-
-    Payment:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int32
-        order_id:
-          type: integer
-          format: int32
-        payment_method:
-          type: string
-        paid:
-          type: boolean
-      required:
-        - id
-        - order_id
-        - payment_method
-        - paid
-
-    PaymentInput:
-      type: object
-      properties:
-        order_id:
-          type: integer
-          format: int32
-        payment_method:
-          type: string
-        paid:
-          type: boolean
-      required:
-        - order_id
-        - payment_method
-        - paid
+        - email
+        - password

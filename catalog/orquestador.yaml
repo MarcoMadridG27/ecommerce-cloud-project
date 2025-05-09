@@ -72,20 +72,27 @@ components:
         fecha:
           type: string
           format: date-time
+        estado:
+          type: string
+          enum: [pendiente, enviado, entregado]
 
     Pago:
       type: object
       properties:
         id:
           type: string
-        orden_id:
+        metodo:
           type: string
+          enum: [tarjeta, transferencia, efectivo]
         monto:
           type: number
           format: float
         fecha:
           type: string
           format: date-time
+        estado:
+          type: string
+          enum: [pendiente, completado, fallido]
 
     Usuario:
       type: object

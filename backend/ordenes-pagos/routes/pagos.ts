@@ -1,11 +1,12 @@
 import { Router } from "../deps.ts";
 import { pagos } from "../db/mongo.ts";
 
-const router = new Router();
+const pagosRouter = new Router();
 
-router
+pagosRouter
   .get("/pagos", async (ctx) => {
-    const data = await pagos.find();
+    const data = await pagos.find().toArray();
+    ctx.response.headers.set("Content-Type", "application/json");  // 🔧 FALTA ESTA LÍNEA
     ctx.response.body = data;
   })
   .post("/pagos", async (ctx) => {
@@ -17,8 +18,9 @@ router
   })
   .get("/pagos/orden/:orden_id", async (ctx) => {
     const orden_id = ctx.params.orden_id!;
-    const pagosOrden = await pagos.find({ orden_id });
-    ctx.response.body = pagosOrden;
+    const data = await pagos.find({ orden_id }).toArray();
+    ctx.response.headers.set("Content-Type", "application/json");  // 🔧 TAMBIÉN AQUÍ
+    ctx.response.body = data;
   });
 
-export default router;
+export default pagosRouter;

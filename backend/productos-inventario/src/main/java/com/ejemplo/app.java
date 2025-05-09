@@ -10,10 +10,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+
 public class app {
     public static void main(String[] args) throws IOException {
         cargarDatosSiVacio();
         HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
+
 
         server.createContext("/health", exchange -> {
             if ("GET".equalsIgnoreCase(exchange.getRequestMethod())) {
@@ -372,6 +374,7 @@ public class app {
                         exchange.sendResponseHeaders(500, -1);
                     }
                     break;
+
                  case "PUT":
     String putBody;
     try (BufferedReader reader = new BufferedReader(
@@ -415,8 +418,9 @@ case "DELETE":
             }
             exchange.close();
         }));
+
         server.createContext("/docs", new StaticFileHandler("docs"));
-        
+
         server.setExecutor(null);
         server.start();
         System.out.println("Server running on http://localhost:8000");
@@ -515,6 +519,7 @@ private static void cargarDatosSiVacio() {
         System.err.println("❌ Error al cargar CSVs: " + e.getMessage());
     }
 }
+
 static class StaticFileHandler implements HttpHandler {
         private final String baseDir;
 
@@ -550,3 +555,5 @@ static class StaticFileHandler implements HttpHandler {
         }
     }
 }
+
+
