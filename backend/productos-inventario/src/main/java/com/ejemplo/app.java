@@ -426,20 +426,21 @@ case "DELETE":
         System.out.println("Server running on http://localhost:8000");
     }
 
-    public static HttpHandler wrapWithCors(HttpHandler handler) {
-        return exchange -> {
-            Headers headers = exchange.getResponseHeaders();
-            headers.add("Access-Control-Allow-Origin", "*");
-            headers.add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-            headers.add("Access-Control-Allow-Headers", "Content-Type");
+public static HttpHandler wrapWithCors(HttpHandler handler) {
+    return exchange -> {
+        Headers headers = exchange.getResponseHeaders();
+        headers.add("Access-Control-Allow-Origin", "*");
+        headers.add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization"); // 👈 añade Authorization
 
-            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
-                exchange.sendResponseHeaders(204, -1);
-            } else {
-                handler.handle(exchange);
-            }
-        };
-    }
+        if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+            exchange.sendResponseHeaders(204, -1);
+        } else {
+            handler.handle(exchange);
+        }
+    };
+}
+
 
 // --- Carga personalizada de CSVs ---
 
