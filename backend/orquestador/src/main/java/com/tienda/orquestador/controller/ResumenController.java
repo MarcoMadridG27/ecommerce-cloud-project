@@ -208,6 +208,11 @@ public class ResumenController {
         String url = baseUrl + "/ordenes/" + id;
         return restTemplate.exchange(url, HttpMethod.GET, null, Object.class);
     }
+    @GetMapping("/ordenes/usuario/{usuarioId}")
+    public ResponseEntity<?> getOrdenesByUsuarioId(@PathVariable String usuarioId) {
+        String url = baseUrl + "/ordenes/usuario/" + usuarioId;
+        return restTemplate.exchange(url, HttpMethod.GET, null, Object.class);
+    }
 
     @PostMapping("/ordenes")
     public ResponseEntity<?> createOrden(@RequestBody Object ordenData) {

@@ -27,7 +27,7 @@ public class app {
             }
         });
 
-        server.createContext("/products", wrapWithCors(exchange -> {
+        server.createContext("/products",exchange -> {
             switch (exchange.getRequestMethod()) {
                 case "GET":
                     try (Connection conn = DBconnection.getConnection();
@@ -81,9 +81,9 @@ public class app {
                     exchange.sendResponseHeaders(405, -1);
             }
             exchange.close();
-        }));
+        });
         
-        server.createContext("/products/", wrapWithCors(exchange -> {
+        server.createContext("/products/",exchange -> {
             String[] pathParts = exchange.getRequestURI().getPath().split("/");
             if (pathParts.length < 3) {
                 exchange.sendResponseHeaders(400, -1);
@@ -159,9 +159,9 @@ public class app {
                     exchange.sendResponseHeaders(405, -1);
             }
             exchange.close();
-        }));
+        });
         
-        server.createContext("/inventories", wrapWithCors(exchange -> {
+        server.createContext("/inventories", exchange -> {
             switch (exchange.getRequestMethod()) {
                 case "GET":
                     try (Connection conn = DBconnection.getConnection();
@@ -207,8 +207,8 @@ public class app {
                     exchange.sendResponseHeaders(405, -1);
             }
             exchange.close();
-        }));
-        server.createContext("/inventories/", wrapWithCors(exchange -> {
+        });
+        server.createContext("/inventories/", exchange -> {
             String[] pathParts = exchange.getRequestURI().getPath().split("/");
             if (pathParts.length < 3) {
                 exchange.sendResponseHeaders(400, -1);
@@ -289,10 +289,10 @@ public class app {
                     exchange.sendResponseHeaders(405, -1);
             }
             exchange.close();
-        }));
+        });
         
         
-        server.createContext("/categories", wrapWithCors(exchange -> {
+        server.createContext("/categories", exchange -> {
             switch (exchange.getRequestMethod()) {
                 case "GET":
                     try (Connection conn = DBconnection.getConnection();
@@ -336,8 +336,8 @@ public class app {
                     exchange.sendResponseHeaders(405, -1);
             }
             exchange.close();
-        }));
-        server.createContext("/categories/", wrapWithCors(exchange -> {
+        });
+        server.createContext("/categories/", (exchange -> {
             String[] pathParts = exchange.getRequestURI().getPath().split("/");
             if (pathParts.length < 3) {
                 exchange.sendResponseHeaders(400, -1); // Bad request si no se pasa el ID
@@ -426,20 +426,6 @@ case "DELETE":
         System.out.println("Server running on http://localhost:8000");
     }
 
-public static HttpHandler wrapWithCors(HttpHandler handler) {
-    return exchange -> {
-        Headers headers = exchange.getResponseHeaders();
-        headers.add("Access-Control-Allow-Origin", "*");
-        headers.add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization"); // 👈 añade Authorization
-
-        if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
-            exchange.sendResponseHeaders(204, -1);
-        } else {
-            handler.handle(exchange);
-        }
-    };
-}
 
 
 // --- Carga personalizada de CSVs ---
