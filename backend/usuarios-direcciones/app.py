@@ -14,7 +14,13 @@ from fastapi import HTTPException
 
 app = FastAPI()
 
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Puedes restringir esto a tu frontend si deseas mayor seguridad
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 db_config = {
     "host": os.environ.get("DB_HOST", "localhost"),

@@ -14,10 +14,9 @@ import java.nio.file.Paths;
 public class app {
     public static void main(String[] args) throws IOException {
         cargarDatosSiVacio();
-        HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
+        HttpServer server = HttpServer.create(new InetSocketAddress("0.0.0.0", 8000), 0);
 
-
-        server.createContext("/health", exchange -> {
+        server.createContext("/", exchange -> {
             if ("GET".equalsIgnoreCase(exchange.getRequestMethod())) {
                 String response = "echo test ok";
                 exchange.sendResponseHeaders(200, response.length());
@@ -27,7 +26,7 @@ public class app {
             }
         });
 
-        server.createContext("/products",exchange -> {
+        server.createContext("/products",wrapWithCors(exchange -> {
             switch (exchange.getRequestMethod()) {
                 case "GET":
                     try (Connection conn = DBconnection.getConnection();
@@ -81,9 +80,9 @@ public class app {
                     exchange.sendResponseHeaders(405, -1);
             }
             exchange.close();
-        });
+        }));
         
-        server.createContext("/products/",exchange -> {
+        server.createContext("/products/",wrapWithCors(exchange -> {
             String[] pathParts = exchange.getRequestURI().getPath().split("/");
             if (pathParts.length < 3) {
                 exchange.sendResponseHeaders(400, -1);
@@ -159,9 +158,9 @@ public class app {
                     exchange.sendResponseHeaders(405, -1);
             }
             exchange.close();
-        });
+        }));
         
-        server.createContext("/inventories", exchange -> {
+        server.createContext("/inventories", wrapWithCors(exchange -> {
             switch (exchange.getRequestMethod()) {
                 case "GET":
                     try (Connection conn = DBconnection.getConnection();
@@ -207,8 +206,9 @@ public class app {
                     exchange.sendResponseHeaders(405, -1);
             }
             exchange.close();
-        });
-        server.createContext("/inventories/", exchange -> {
+        }));
+        
+        server.createContext("/inventories/", wrapWithCors(exchange -> {
             String[] pathParts = exchange.getRequestURI().getPath().split("/");
             if (pathParts.length < 3) {
                 exchange.sendResponseHeaders(400, -1);
@@ -289,10 +289,10 @@ public class app {
                     exchange.sendResponseHeaders(405, -1);
             }
             exchange.close();
-        });
+        }));
         
         
-        server.createContext("/categories", exchange -> {
+        server.createContext("/categories", wrapWithCors(exchange -> {
             switch (exchange.getRequestMethod()) {
                 case "GET":
                     try (Connection conn = DBconnection.getConnection();
@@ -336,8 +336,9 @@ public class app {
                     exchange.sendResponseHeaders(405, -1);
             }
             exchange.close();
-        });
-        server.createContext("/categories/", (exchange -> {
+        }));
+
+        server.createContext("/categories/", wrapWithCors(exchange -> {
             String[] pathParts = exchange.getRequestURI().getPath().split("/");
             if (pathParts.length < 3) {
                 exchange.sendResponseHeaders(400, -1); // Bad request si no se pasa el ID
@@ -541,6 +542,21 @@ static class StaticFileHandler implements HttpHandler {
             exchange.close();
         }
     }
+
+
+public static HttpHandler wrapWithCors(HttpHandler handler) {
+    return exchange -> {
+        Headers headers = exchange.getResponseHeaders();
+        headers.add("Access-Control-Allow-Origin", "*");
+        headers.add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+        if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+            exchange.sendResponseHeaders(204, -1);
+            return;
+        }
+
+        handler.handle(exchange);
+    };
 }
-
-
+}

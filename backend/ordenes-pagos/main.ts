@@ -5,6 +5,18 @@ import healthcheckRouter from "./routes/healthcheck.ts";  // Nuevo import
 
 const app = new Application();
 
+app.use(async (ctx, next) => {
+    ctx.response.headers.set("Access-Control-Allow-Origin", "*");
+    ctx.response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    ctx.response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    
+    if (ctx.request.method === "OPTIONS") {
+      ctx.response.status = 204;
+      return;
+    }
+    
+    await next();
+  });
 
 app.use(async (ctx, next) => {
   const start = Date.now();
@@ -22,5 +34,6 @@ app.use(ordenesRouter.allowedMethods());
 app.use(pagosRouter.routes());
 app.use(pagosRouter.allowedMethods());
 
-console.log("🚀 Servidor corriendo en http://localhost:8000");
-await app.listen({ port: 8000 });
+console.log("🚀 Servidor corriendo en http://0.0.0.0:8000");
+await app.listen({ hostname: "0.0.0.0", port: 8000 });
+
