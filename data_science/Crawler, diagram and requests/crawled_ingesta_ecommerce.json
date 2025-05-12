@@ -1,0 +1,126 @@
+[
+  {
+    "Name": "id",
+    "Type": "bigint"
+  },
+  {
+    "Name": "category_name",
+    "Type": "string"
+  },
+  {
+    "Name": "product_id",
+    "Type": "bigint"
+  },
+  {
+    "Name": "quantity",
+    "Type": "bigint"
+  },
+  {
+    "Name": "_id",
+    "Type": "string"
+  },
+  {
+    "Name": "usuario_id",
+    "Type": "bigint"
+  },
+  {
+    "Name": "productos",
+    "Type": "string"
+  },
+  {
+    "Name": "total",
+    "Type": "double"
+  },
+  {
+    "Name": "fecha",
+    "Type": "string"
+  },
+  {
+    "Name": "estado",
+    "Type": "string"
+  },
+  {
+    "Name": "orden_id",
+    "Type": "string"
+  },
+  {
+    "Name": "metodo",
+    "Type": "string"
+  },
+  {
+    "Name": "monto",
+    "Type": "double"
+  },
+  {
+    "Name": "name",
+    "Type": "string"
+  },
+  {
+    "Name": "category_id",
+    "Type": "bigint"
+  },
+  {
+    "Name": "price",
+    "Type": "double"
+  },
+  {
+    "Name": "user_id",
+    "Type": "bigint"
+  },
+  {
+    "Name": "firstname",
+    "Type": "string"
+  },
+  {
+    "Name": "lastname",
+    "Type": "string"
+  },
+  {
+    "Name": "email",
+    "Type": "string"
+  },
+  {
+    "Name": "age",
+    "Type": "bigint"
+  },
+  {
+    "Name": "address_line",
+    "Type": "string"
+  },
+  {
+    "Name": "city",
+    "Type": "string"
+  },
+  {
+    "Name": "country",
+    "Type": "string"
+  },
+  {
+    "Name": "notification_message",
+    "Type": "string"
+  },
+  {
+    "Name": "notification_time",
+    "Type": "string"
+  },
+  {
+    "Name": "notification_read",
+    "Type": "double"
+  },
+  {
+    "Name": "ticket_subject",
+    "Type": "string"
+  },
+  {
+    "Name": "ticket_description",
+    "Type": "string"
+  },
+  {
+    "Name": "ticket_status",
+    "Type": "string"
+  },
+  {
+    "Name": "ticket_created",
+    "Type": "string"
+  }
+]
