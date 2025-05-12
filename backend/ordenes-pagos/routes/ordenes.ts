@@ -35,7 +35,7 @@ ordenesRouter
   try {
     const usuario_id = ctx.params.usuario_id!;
     
-    // Verificar con microservicio de usuarios
+
     const usuariosHost = Deno.env.get("USUARIOS_DIRECCIONES_HOST") || "http://localhost:8001";
     const userResponse = await fetch(`${usuariosHost}/users/${usuario_id}`);
 
@@ -45,7 +45,7 @@ ordenesRouter
       return;
     }
 
-    // Obtener órdenes locales
+
     const data = await ordenes.find({ usuario_id }).toArray();
     ctx.response.headers.set("Content-Type", "application/json");
     ctx.response.body = data;
@@ -59,10 +59,10 @@ ordenesRouter
   .get("/ordenes/:id", async (ctx) => {
   try {
     const id = ctx.params.id!;
-    const orden = await ordenes.findOne({ _id: id }); // mantén este si usas UUID en lugar de ObjectId
+    const orden = await ordenes.findOne({ _id: id }); 
 
     if (orden) {
-      ctx.response.headers.set("Content-Type", "application/json");  // ✅
+      ctx.response.headers.set("Content-Type", "application/json");
       ctx.response.body = orden;
     } else {
       ctx.response.status = 404;
